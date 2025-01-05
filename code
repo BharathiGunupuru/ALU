@@ -1,0 +1,61 @@
+module demo_ALU(
+    input wire clk,
+    input wire rst,
+    input wire [1:0] en,
+    input wire [2:0] fn,
+    input wire [7:0] op1,
+    input wire [7:0] op2,
+    output reg [15:0] outp,
+    output reg outp_valid
+);
+    
+    always @(posedge clk) begin
+        if (rst) begin
+            outp <= 16'd0;
+            outp_valid <= 1'b0;
+        end else if (en == 2'b01) begin
+            case (fn)
+                3'b000: begin // Addition
+                    outp <= op1 + op2;
+                    outp_valid <= 1'b1;
+                end
+                3'b001: begin // Subtraction
+                    outp <= op1 - op2;
+                    outp_valid <= 1'b1;
+                end
+                3'b010: begin // Multiplication
+                    outp <= op1 * op2;
+                    outp_valid <= 1'b1;
+                end
+                3'b011: begin // Division
+                    if (op2 != 0) begin
+                        outp <= op1 / op2;
+                        outp_valid <= 1'b1;
+                    end else begin
+                        outp <= 16'd0; // Division by zero
+                        outp_valid <= 1'b0;
+                    end
+                end
+                3'b100: begin // AND
+                    outp <= op1 & op2;
+                    outp_valid <= 1'b1;
+                end
+                3'b101: begin // OR
+                    outp <= op1 | op2;
+                    outp_valid <= 1'b1;
+                end
+                3'b110: begin // NOT (only op1 is inverted)
+                    outp <= ~op1;
+                    outp_valid <= 1'b1;
+                end
+                default: begin
+                    outp <= 16'd0;
+                    outp_valid <= 1'b0;
+                end
+            endcase
+        end else begin
+            outp_valid <= 1'b0;
+        end
+    end
+
+endmodule
