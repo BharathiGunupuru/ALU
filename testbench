@@ -1,0 +1,109 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity tb_Demo_ALU is
+-- Testbench has no ports
+end tb_Demo_ALU;
+
+architecture behavior of tb_Demo_ALU is
+
+    -- Component Declaration for Verilog ALU
+    component demo_ALU
+        port (
+            clk        : in  std_logic;
+            rst        : in  std_logic;
+            en         : in  std_logic_vector(1 downto 0);
+            fn         : in  std_logic_vector(2 downto 0);
+            op1        : in  std_logic_vector(7 downto 0);
+            op2        : in  std_logic_vector(7 downto 0);
+            outp       : out std_logic_vector(15 downto 0);
+            outp_valid : out std_logic
+        );
+    end component;
+
+    -- Signals for the ALU
+    signal clk        : std_logic := '0';
+    signal rst        : std_logic := '1';
+    signal en         : std_logic_vector(1 downto 0) := "00";
+    signal fn         : std_logic_vector(2 downto 0) := "000";
+    signal op1        : std_logic_vector(7 downto 0) := (others => '0');
+    signal op2        : std_logic_vector(7 downto 0) := (others => '0');
+    signal outp       : std_logic_vector(15 downto 0);
+    signal outp_valid : std_logic;
+
+    -- Clock period definition
+    constant clk_period : time := 10 ns;
+
+begin
+
+    -- Instantiate the Verilog ALU
+    uut: demo_ALU
+        port map (
+            clk        => clk,
+            rst        => rst,
+            en         => en,
+            fn         => fn,
+            op1        => op1,
+            op2        => op2,
+            outp       => outp,
+            outp_valid => outp_valid
+        );
+
+    -- Clock generation process
+    clk_process: process
+    begin
+        while true loop
+            clk <= '0';
+            wait for clk_period / 2;
+            clk <= '1';
+            wait for clk_period / 2;
+        end loop;
+    end process;
+
+    -- Stimulus process
+    stimulus: process
+    begin
+        -- Reset the ALU
+        rst <= '1';
+        wait for 20 ns;
+        rst <= '0';
+
+        -- Test Addition (187 + 11 = 198)
+        en <= "01";
+        fn <= "000"; -- Addition function
+        op1 <= std_logic_vector(to_unsigned(187, 8));
+        op2 <= std_logic_vector(to_unsigned(11, 8));
+        wait for clk_period;
+
+        -- Test Subtraction (187 - 11 = 176)
+        fn <= "001"; -- Subtraction function
+        wait for clk_period;
+
+        -- Test Multiplication (187 * 11 = 2057)
+        fn <= "010"; -- Multiplication function
+        wait for clk_period;
+
+        -- Test Division (187 / 11 = 17)
+        fn <= "011"; -- Division function
+        wait for clk_period;
+
+        -- Test AND (187 & 11 = 11)
+        fn <= "100"; -- AND function
+        wait for clk_period;
+
+        -- Test OR (187 | 11 = 187)
+        fn <= "101"; -- OR function
+        wait for clk_period;
+
+        -- Test NOT (~187)
+        fn <= "110"; -- NOT function
+        op2 <= (others => '0'); -- Not applicable for NOT
+        wait for clk_period;
+
+        -- End simulation
+        wait for 20 ns;
+        report "Testbench simulation completed" severity note;
+        wait;
+end process
+end behavior
